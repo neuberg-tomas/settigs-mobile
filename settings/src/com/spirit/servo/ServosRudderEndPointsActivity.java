@@ -26,6 +26,7 @@ import android.widget.TextView;
 
 import com.customWidget.picker.ProgresEx;
 import com.customWidget.picker.ProgresEx.OnChangedListener;
+import com.google.analytics.tracking.android.EasyTracker;
 import com.helpers.DstabiProfile;
 import com.helpers.DstabiProfile.ProfileItem;
 import com.lib.BluetoothCommandService;
@@ -44,7 +45,7 @@ public class ServosRudderEndPointsActivity extends BaseActivity
 
 	private int formItems[] = {R.id.rudder_limit_min, R.id.rudder_limit_max,};
 
-	private int formItemsTitle[] = {R.string.min_max, R.string.blank,};
+	private int formItemsTitle[] = {R.string.min_limit, R.string.max_limit,};
 
 	/**
 	 * zavolani pri vytvoreni instance aktivity servos
@@ -57,7 +58,7 @@ public class ServosRudderEndPointsActivity extends BaseActivity
 		initSlideMenu(R.layout.servos_rudder_end_points);
 
 		getWindow().setFeatureInt(Window.FEATURE_CUSTOM_TITLE, R.layout.window_title);
-		((TextView) findViewById(R.id.title)).setText(TextUtils.concat("...", " \u2192 ", getString(R.string.limit), getString(R.string.rudder_end_points_no_break)));
+		((TextView) findViewById(R.id.title)).setText(TextUtils.concat("...", " \u2192 ", getString(R.string.limits), " \u2192 ", getString(R.string.rudder_end_points_no_break)));
 
 		initGui();
 		initConfiguration();
@@ -96,6 +97,7 @@ public class ServosRudderEndPointsActivity extends BaseActivity
 		super.onResume();
 		if (stabiProvider.getState() == BluetoothCommandService.STATE_CONNECTED) {
 			((ImageView) findViewById(R.id.image_title_status)).setImageResource(R.drawable.green);
+            initDefaultValue();
 		} else {
 			finish();
 		}
@@ -118,7 +120,7 @@ public class ServosRudderEndPointsActivity extends BaseActivity
 	{
 		for (int i = 0; i < formItems.length; i++) {
 			ProgresEx tempPicker = (ProgresEx) findViewById(formItems[i]);
-			tempPicker.setRange(0, 255); // tohle rozmezi asi brat ze stabi profilu
+			tempPicker.setRange(32, 255); // tohle rozmezi asi brat ze stabi profilu
 			tempPicker.setTitle(formItemsTitle[i]); // tohle rozmezi asi brat ze stabi profilu
 		}
 	}
@@ -165,7 +167,8 @@ public class ServosRudderEndPointsActivity extends BaseActivity
 		for (int i = 0; i < formItems.length; i++) {
 			ProgresEx tempPicker = (ProgresEx) findViewById(formItems[i]);
 			int size = profileCreator.getProfileItemByName(protocolCode[i]).getValueInteger();
-
+            ProfileItem item = profileCreator.getProfileItemByName(protocolCode[i]);
+            tempPicker.setRange(item.getMinimum(), item.getMaximum()); // nastavuji rozmezi prvku z profilu
 			tempPicker.setCurrentNoNotify(size);
 		}
 
@@ -185,8 +188,10 @@ public class ServosRudderEndPointsActivity extends BaseActivity
 				if (parent.getId() == formItems[i]) {
 					showInfoBarWrite();
 					ProfileItem item = profileCreator.getProfileItemByName(protocolCode[i]);
-					item.setValue(newVal);
-					stabiProvider.sendDataNoWaitForResponce(item);
+                    if(item != null) {
+                        item.setValue(newVal);
+                        stabiProvider.sendDataNoWaitForResponce(item);
+                    }
 				}
 			}
 
@@ -214,4 +219,16 @@ public class ServosRudderEndPointsActivity extends BaseActivity
 		}
 		return true;
 	}
+
+    @Override
+    public void onStart() {
+        super.onStart();
+        EasyTracker.getInstance(this).activityStart(this);
+    }
+
+    @Override
+    public void onStop() {
+        super.onStop();
+        EasyTracker.getInstance(this).activityStop(this);
+    }
 }

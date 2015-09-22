@@ -30,7 +30,6 @@ import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
-import com.helpers.NumberOperation;
 import com.spirit.R;
 
 public class ProgresEx extends LinearLayout implements OnClickListener,  OnLongClickListener {
@@ -52,17 +51,16 @@ public class ProgresEx extends LinearLayout implements OnClickListener,  OnLongC
 	private final RelativeLayout mainLayout;
 	
 	private final ProgressBar  mObjProgres;
-	
-	private int mCurrent = DEFAULT_MIN;
-	private int mMin = DEFAULT_MIN;
-	private int mMax = DEFAULT_MAX;
-	private boolean mFloor = false;
+
+    private int mCurrent = DEFAULT_MIN;
+    private String mCurrentString = null;
+    private int mMin = DEFAULT_MIN;
+    private int mMax = DEFAULT_MAX;
 
 	private int mRangeMin = DEFAULT_MIN;
 	private int mRangeMax = DEFAULT_MAX;
 	private String mTitle = "";
-	private boolean mShowAsPercent = false;
-	
+
 	private int mOffset = 0;
 
     private int originalValue = DEFAULT_MIN;
@@ -71,20 +69,27 @@ public class ProgresEx extends LinearLayout implements OnClickListener,  OnLongC
 	private ProgresExButton mDecrementButton;
 	
 	private OnChangedListener mListener;
-	
+
+    private OnLongClickListener mListenerLongClick;
+
 	private boolean mIncrement;
     private boolean mDecrement;
-	
+
+    private int stepLongPress = 1;
+    private int stepPress = 1;
+
+    private boolean enabledDefaultValue = true;
+
     private ProgresExViewTranslateInterface translate;
     
     private final Handler mHandler;
     private final Runnable mRunnable = new Runnable() {
         public void run() {
             if (mIncrement) {
-                changeCurrent(mCurrent + 1);
+                changeCurrent(mCurrent + stepLongPress);
                 mHandler.postDelayed(this, 100);
             } else if (mDecrement) {
-                changeCurrent(mCurrent - 1);
+                changeCurrent(mCurrent - stepLongPress);
                 mHandler.postDelayed(this, 100);
             }
         }
@@ -93,7 +98,11 @@ public class ProgresEx extends LinearLayout implements OnClickListener,  OnLongC
 	public interface OnChangedListener {
 		void onChanged(ProgresEx picker, int newVal);
 	}
-	
+
+    public interface setOnLongClickListener {
+        void OnLongClickListener(ProgresEx picker);
+    }
+
 	public ProgresEx(Context context) {
 	    this(context, null);
 	}
@@ -110,6 +119,7 @@ public class ProgresEx extends LinearLayout implements OnClickListener,  OnLongC
 	    
 	    mainLayout = (RelativeLayout) findViewById(R.id.progres_main);
         mainLayout.setOnClickListener(this);
+        mainLayout.setOnLongClickListener(this);
 
 	    mObjTitle 	= (TextView) findViewById(R.id.progres_title); 
 	    
@@ -143,6 +153,22 @@ public class ProgresEx extends LinearLayout implements OnClickListener,  OnLongC
 
     /**
      *
+     * @param step
+     */
+    public void setStepLongPress(int step){
+        this.stepLongPress = step;
+    }
+
+    /**
+     *
+     * @param step
+     */
+    public void setStepPress(int step){
+        this.stepPress = step;
+    }
+
+    /**
+     *
      * @param status
      */
     public void setEnabled(boolean status)
@@ -152,22 +178,14 @@ public class ProgresEx extends LinearLayout implements OnClickListener,  OnLongC
             mObjProgres.setProgressDrawable(getResources().getDrawable(R.drawable.my_disable_custom_pb));
             mainLayout.setOnClickListener(null);
             mainLayout.setBackgroundResource(R.drawable.disabled_list_selector);
+            hideInput();
         }else{
             mObjProgres.setProgressDrawable(getResources().getDrawable(R.drawable.my_custom_pb));
             mainLayout.setOnClickListener(this);
             mainLayout.setBackgroundResource(R.drawable.list_selector);
         }
     }
-	
-	/**
-	 * zobrazit progres jako procenta, min a max ukazuji 0 a 100, k cislu ve vypisu se pridaji procenta
-	 * 
-	 * @param showAsPercent
-	 */
-	public void showAsPercent(boolean showAsPercent){
-		this.mShowAsPercent = showAsPercent;
-	}
-	
+
 	/**
 	 * nastaveni aktialni hodnoty
 	 * 
@@ -178,6 +196,7 @@ public class ProgresEx extends LinearLayout implements OnClickListener,  OnLongC
 			return;
 		}
 		this.mCurrent = mCurrent;
+        this.mCurrentString = null;
 		notifyChange();		
 		updateView();
 	}
@@ -189,8 +208,19 @@ public class ProgresEx extends LinearLayout implements OnClickListener,  OnLongC
 	 */
 	public void setCurrentNoNotify(int mCurrent) {
 		this.mCurrent = mCurrent;
+        this.mCurrentString = null;
 		updateView();
 	}
+
+    /**
+     * nastaveni aktialni hodnoty bez zavolani onchange
+     *
+     * @param mCurrent
+     */
+    public void setCurrentNoNotify(String mCurrent) {
+        this.mCurrentString = mCurrent;
+        updateView();
+    }
 	
 	/**
 	 * nastaveni posluchace na zmenu hodnoty
@@ -199,6 +229,15 @@ public class ProgresEx extends LinearLayout implements OnClickListener,  OnLongC
 	 */
 	public void setOnChangeListener(OnChangedListener listener) {
         mListener = listener;
+    }
+
+    /**
+     * nastaveni posluchace na dlouhy klik
+     *
+     * @param listener
+     */
+    public void setOnLongClickListener(OnLongClickListener listener) {
+        mListenerLongClick = listener;
     }
 	
 	/**
@@ -267,10 +306,6 @@ public class ProgresEx extends LinearLayout implements OnClickListener,  OnLongC
 		setTitle(getContext().getString(mTitle));
 	}
 	
-	public void setFloor(boolean floor){
-		mFloor = floor;
-	}
-	
 	/**
 	 * pri zmene nejakeho prvku updatujem view
 	 */
@@ -278,40 +313,23 @@ public class ProgresEx extends LinearLayout implements OnClickListener,  OnLongC
 		mObjTitle.setText(mTitle);
 		mObjProgres.setProgress(mCurrent - mMin);
 		
-		double percent          = mMin;
-        double percentOriginal =  mMin;
 		if(this.translate == null){
-			if(mShowAsPercent){
-				if(mFloor){
-					mObjMin.setText(String.valueOf(Math.floor((int)NumberOperation.numberToPercent(mRangeMax - mRangeMin , mMin))));
-					mObjMax.setText(String.valueOf(Math.floor((int)NumberOperation.numberToPercent(mRangeMax - mRangeMin , mMax))));
-					percent = Math.max(0, Math.floor(NumberOperation.numberToPercent(mRangeMax - mRangeMin , mCurrent)));
-                    percentOriginal = Math.max(0, Math.floor(NumberOperation.numberToPercent(mRangeMax - mRangeMin , originalValue)));
-				}else{
-					mObjMin.setText(String.valueOf((int)NumberOperation.numberToPercent(mRangeMax - mRangeMin , mMin)));
-					mObjMax.setText(String.valueOf((int)NumberOperation.numberToPercent(mRangeMax - mRangeMin  , mMax)));
-					percent = Math.max(0, NumberOperation.round(NumberOperation.numberToPercent(mRangeMax - mRangeMin  , mCurrent), 1));
-                    percentOriginal = Math.max(0, NumberOperation.round(NumberOperation.numberToPercent(mRangeMax - mRangeMin  , originalValue), 1));
-				}
-				
-				mObjProgresValue.setText(String.valueOf(percent) + "%");
-				mObjCurrent.setText(mCurrent != originalValue ? String.valueOf(percent) + "%" : "");
-
-                mObjOriginal.setText(String.valueOf(percentOriginal) + "%");
-			}else{
-				mObjMin.setText(String.valueOf(mRangeMin));
-				mObjMax.setText(String.valueOf(mRangeMax));
-				mObjProgresValue.setText(String.valueOf(mCurrent + mOffset));
-				mObjCurrent.setText(String.valueOf(mCurrent + mOffset));
-                mObjOriginal.setText(mCurrent != originalValue ? String.valueOf(originalValue + mOffset) : "");
-			}
+            mObjMin.setText(String.valueOf(mRangeMin));
+            mObjMax.setText(String.valueOf(mRangeMax));
+            mObjProgresValue.setText(String.valueOf(mCurrent + mOffset));
+            mObjCurrent.setText(String.valueOf(mCurrent + mOffset));
+            mObjOriginal.setText(mCurrent != originalValue && enabledDefaultValue ? String.valueOf(originalValue + mOffset) : "");
 		}else{
 			mObjMin.setText(this.translate.translateMin(mRangeMin));
 			mObjMax.setText(this.translate.translateMax(mRangeMax));
 			mObjProgresValue.setText(this.translate.translateCurrent(mCurrent + mOffset));
 			mObjCurrent.setText(this.translate.translateCurrent(mCurrent + mOffset));
-            mObjOriginal.setText(mCurrent != originalValue ? this.translate.translateCurrent(originalValue + mOffset) : "");
+            mObjOriginal.setText(mCurrent != originalValue && enabledDefaultValue ? this.translate.translateCurrent(originalValue + mOffset) : "");
 		}
+
+        if(mCurrentString != null) {
+            mObjCurrent.setText(mCurrentString);
+        }
 		
     }
 	
@@ -341,9 +359,9 @@ public class ProgresEx extends LinearLayout implements OnClickListener,  OnLongC
 
         // now perform the increment/decrement
         if (R.id.progres_minus == v.getId()) {
-            changeCurrent(mCurrent-1);
+            changeCurrent(mCurrent-stepPress);
         } else if (R.id.progres_plus == v.getId()) {
-            changeCurrent(mCurrent+1);
+            changeCurrent(mCurrent+stepPress);
         }else if (R.id.progres_main == v.getId()) {
             toogleInput();
         }
@@ -360,6 +378,10 @@ public class ProgresEx extends LinearLayout implements OnClickListener,  OnLongC
         } else if (R.id.progres_minus == v.getId()) {
             mDecrement = true;
             mHandler.post(mRunnable);
+        }else if(R.id.progres_main == v.getId()){
+            if(mListenerLongClick != null) {
+                mListenerLongClick.onLongClick(this);
+            }
         }
         return true;
     }
@@ -416,5 +438,13 @@ public class ProgresEx extends LinearLayout implements OnClickListener,  OnLongC
     public void setOriginalValue(int originalValue) {
         this.originalValue = originalValue;
         updateView();
+    }
+
+    public boolean isEnabledDefaultValue() {
+        return enabledDefaultValue;
+    }
+
+    public void setEnabledDefaultValue(boolean enabledDefaultValue) {
+        this.enabledDefaultValue = enabledDefaultValue;
     }
 }

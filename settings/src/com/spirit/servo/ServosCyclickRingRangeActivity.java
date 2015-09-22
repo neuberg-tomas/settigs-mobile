@@ -26,6 +26,7 @@ import android.widget.TextView;
 
 import com.customWidget.picker.ProgresEx;
 import com.customWidget.picker.ProgresEx.OnChangedListener;
+import com.google.analytics.tracking.android.EasyTracker;
 import com.helpers.ByteOperation;
 import com.helpers.DstabiProfile;
 import com.helpers.DstabiProfile.ProfileItem;
@@ -58,7 +59,7 @@ public class ServosCyclickRingRangeActivity extends BaseActivity
 		initSlideMenu(R.layout.cyclic_ring_range);
 
 		getWindow().setFeatureInt(Window.FEATURE_CUSTOM_TITLE, R.layout.window_title);
-		((TextView) findViewById(R.id.title)).setText(TextUtils.concat("...", " \u2192 ", getString(R.string.limit), getString(R.string.cyclic_ring_range_no_break)));
+		((TextView) findViewById(R.id.title)).setText(TextUtils.concat("...", " \u2192 ", getString(R.string.limits), " \u2192 ",  getString(R.string.cyclic_ring_range_no_break)));
 
 		initGui();
 		initConfiguration();
@@ -100,6 +101,7 @@ public class ServosCyclickRingRangeActivity extends BaseActivity
 			if (!getAppBasicMode()) {
 				stabiProvider.sendDataNoWaitForResponce("O", ByteOperation.intToByteArray(0x04)); //povoleni ladeni cyclic ringu
 			}
+            initDefaultValue();
 		} else {
 			finish();
 		}
@@ -131,7 +133,7 @@ public class ServosCyclickRingRangeActivity extends BaseActivity
 	{
 		for (int i = 0; i < formItems.length; i++) {
 			ProgresEx tempPicker = (ProgresEx) findViewById(formItems[i]);
-			tempPicker.setRange(0, 255); // tohle rozmezi asi brat ze stabi profilu
+			tempPicker.setRange(32, 255); // tohle rozmezi asi brat ze stabi profilu
 			tempPicker.setTitle(formItemsTitle[i]);
 		}
 	}
@@ -178,7 +180,8 @@ public class ServosCyclickRingRangeActivity extends BaseActivity
 		for (int i = 0; i < formItems.length; i++) {
 			ProgresEx tempPicker = (ProgresEx) findViewById(formItems[i]);
 			int size = profileCreator.getProfileItemByName(protocolCode[i]).getValueInteger();
-
+            ProfileItem item = profileCreator.getProfileItemByName(protocolCode[i]);
+            tempPicker.setRange(item.getMinimum(), item.getMaximum()); // nastavuji rozmezi prvku z profilu
 			tempPicker.setCurrentNoNotify(size);
 		}
 
@@ -198,8 +201,10 @@ public class ServosCyclickRingRangeActivity extends BaseActivity
 				if (parent.getId() == formItems[i]) {
 					showInfoBarWrite();
 					ProfileItem item = profileCreator.getProfileItemByName(protocolCode[i]);
-					item.setValue(newVal);
-					stabiProvider.sendDataNoWaitForResponce(item);
+                    if(item != null) {
+                        item.setValue(newVal);
+                        stabiProvider.sendDataNoWaitForResponce(item);
+                    }
 				}
 			}
             initDefaultValue();
@@ -226,4 +231,16 @@ public class ServosCyclickRingRangeActivity extends BaseActivity
 		}
 		return true;
 	}
+
+    @Override
+    public void onStart() {
+        super.onStart();
+        EasyTracker.getInstance(this).activityStart(this);
+    }
+
+    @Override
+    public void onStop() {
+        super.onStop();
+        EasyTracker.getInstance(this).activityStop(this);
+    }
 }

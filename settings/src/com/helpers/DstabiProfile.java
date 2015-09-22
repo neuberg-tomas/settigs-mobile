@@ -81,13 +81,13 @@ public class DstabiProfile {
 	{
 		/* MTODO nazvy udelat v konstantach */
 		profileMap.put("MAJOR", 	new ProfileItem(1, 0, 255, 		null,	true)); // 'major', INT,
-		profileMap.put("MINOR", 	new ProfileItem(2, 0, 255, 		null,	true)); // 'minor', INT
+		profileMap.put("MINOR2", 	new ProfileItem(2, 0, 255, 		null,	true)); // 'minor', INT
 
 		profileMap.put("POSITION", 	new ProfileItem(3, "A", "C", 	"P",	true)); // position_text, ENUM, position_values
 		profileMap.put("BANKS", 		new ProfileItem(4,  0, 	2, 		"M", 	true));
         //profileMap.put("SIGNAL_PROCESSING",	new ProfileItem(4, "0", "1", "7")); // rozsirene zpracovani signalu
 
-		profileMap.put("RECEIVER",	new ProfileItem(5, "A", "E", 	"R",	true));
+		profileMap.put("RECEIVER",	new ProfileItem(5, "A", "F", 	"R",	true));
 		profileMap.put("MIX",	 	new ProfileItem(6, "A", "D", 	"C",	true));
 
 		profileMap.put("CYCLIC_TYPE",	new ProfileItem(7, "A", "A", 	"ST",	true));
@@ -95,16 +95,16 @@ public class DstabiProfile {
 		profileMap.put("RUDDER_TYPE",	new ProfileItem(9, "A", "C", 	"St",	true));
 		profileMap.put("RUDDER_FREQ",	new ProfileItem(10, "A", "G", 	"Sf",	true));
 
-		profileMap.put("SUBTRIM_AIL",	new ProfileItem(16, 0, 255, 	"SA",	true));
-		profileMap.put("SUBTRIM_ELE",	new ProfileItem(17, 0, 255, 	"SE",	true));
-		profileMap.put("SUBTRIM_PIT",	new ProfileItem(18, 0, 255, 	"SP",	true));
-		profileMap.put("SUBTRIM_RUD",	new ProfileItem(12, 0, 255, 	"Se",	true));
+		profileMap.put("SUBTRIM_AIL",	new ProfileItem(16, 0, 254, 	"SA",	true));
+		profileMap.put("SUBTRIM_ELE",	new ProfileItem(17, 0, 254, 	"SE",	true));
+		profileMap.put("SUBTRIM_PIT",	new ProfileItem(18, 0, 254, 	"SP",	true));
+		profileMap.put("SUBTRIM_RUD",	new ProfileItem(12, 0, 254, 	"Se",	true));
 
-		profileMap.put("RANGE_AIL",		new ProfileItem(11, 0, 255, 	"Sa",	true));	// cyclic ring
-		profileMap.put("RANGE_PIT",		new ProfileItem(13, 0, 255, 	"Sp",	false));	// rozsah kolektivu
+		profileMap.put("RANGE_AIL",		new ProfileItem(11, 32, 255, 	"Sa",	true));	// cyclic ring
+		profileMap.put("RANGE_PIT",		new ProfileItem(13, 32, 255, 	"Sp",	false));	// rozsah kolektivu
 
-		profileMap.put("RUDDER_MIN",	new ProfileItem(14, 0, 255, 	"Sm",	true));
-		profileMap.put("RUDDER_MAX",	new ProfileItem(15, 0, 255, 	"SM",	true));
+		profileMap.put("RUDDER_MIN",	new ProfileItem(14, 32, 255, 	"Sm",	true));
+		profileMap.put("RUDDER_MAX",	new ProfileItem(15, 32, 255, 	"SM",	true));
 
 		profileMap.put("SENSOR_SENX",	new ProfileItem(19, 0, 80, "x",	false)); 		// zisk cyklikt
 		profileMap.put("GEOMETRY",		new ProfileItem(20, 64, 250, "8",	true));		// geometrie hlavy - 6
@@ -115,22 +115,22 @@ public class DstabiProfile {
 		profileMap.put("SENSOR_REVZ",	new ProfileItem(24, "0", "1", "Z",	true));
         //
 		profileMap.put("RATE_PITCH",	new ProfileItem(25, 5, 16, 	"a",	false));		// rychlost rotace cykliky
-		profileMap.put("CYCLIC_FF",		new ProfileItem(26, 0, 12, 	"b",	false));		// pocatecni reakce cykliky
-		profileMap.put("RATE_YAW",		new ProfileItem(27, 4, 20, 	"c",	false));		// rychlost rotace vrtulky
+		profileMap.put("CYCLIC_FF",		new ProfileItem(26, 1, 12, 	"b",	false));		// pocatecni reakce cykliky
+		profileMap.put("RATE_YAW",		new ProfileItem(27, 5, 20, 	"c",	false));		// rychlost rotace vrtulky
 
 		profileMap.put("PITCHUP",	    new ProfileItem(28, 0, 4, "r",	false)); 	// kompenzace zpinani vyskovky
 		profileMap.put("STICK_DB",		new ProfileItem(29, 4, 30, "s",	false));  // mrtva zona knyplu
 		profileMap.put("RUDDER_STOP",	new ProfileItem(30, 3, 10, "p",	false)); 		// dynamika vrtulky
-		profileMap.put("ALT_FUNCTION",	new ProfileItem(31, "A", "D", "f",	false)); 	// stabi mode
+		profileMap.put("ALT_FUNCTION",	new ProfileItem(31, "A", "E", "f",	false)); 	// stabi mode
         profileMap.put("CYCLIC_REVERSE",	new ProfileItem(32, "A", "D", 	"v",	true));
 		profileMap.put("RUDDER_REVOMIX",new ProfileItem(33, 118, 138, "m",	false)); //
 
 		profileMap.put("STABI_CTRLDIR", new ProfileItem(34, 1, 5, "0",	false));  // Mira zmeny smeru
 		profileMap.put("STABI_COL",     new ProfileItem(35, 117, 137, "1",	false)); 		// kolektiv zachranneho rezimu
 		//profileMap.put("STABI_ROLL",    new ProfileItem(36, 63, 191, "2")); // stabi, kompenzace pro kridelka
-		profileMap.put("STABI_STICK",   new ProfileItem(37, 0, 10, "3",	false)); // priorita knyplu
+		profileMap.put("STABI_STICK",   new ProfileItem(37, 0, 16, "3",	false)); // priorita knyplu
 
-		profileMap.put("PIROUETTE_CONST",	new ProfileItem(38, 64, 250, "H",	false)); // konzistence piruet
+		profileMap.put("PIROUETTE_CONST",	new ProfileItem(38, 130, 250, "H",	false)); // konzistence piruet
 
 		profileMap.put("CHECKSUM_LO",	new ProfileItem(36, 0, 255, null,	true)); 	// checksum pro kontrolu dat
 		profileMap.put("CHECKSUM_HI",	new ProfileItem(39, 0, 255, null,	true)); 	// checksum pro kontrolu dat
@@ -165,7 +165,20 @@ public class DstabiProfile {
 		profileMap.put("CHANNELS_PITH",	new ProfileItem(58, 0, 7, "Ep",	true));
 		profileMap.put("CHANNELS_BANK",	new ProfileItem(59, 0, 7, "Eb",	true));
 		
-		profileMap.put("SENSOR_GYROGAIN",	new ProfileItem(60, 0, 200, "7",	true));
+		profileMap.put("SENSOR_GYROGAIN",	new ProfileItem(60, 0, 200, "7",	false));
+
+        profileMap.put("GOVERNOR_MODE",	        new ProfileItem(61, 0, 4, "2",	true));
+        profileMap.put("GOVERNOR_PGAIN",	    new ProfileItem(62, 1, 10, "j",	false)); // P Gain
+        profileMap.put("MINOR1", 	            new ProfileItem(63, 0, 255, null,	true)); // 'minor', INT
+        profileMap.put("PITCH_PUMP",	        new ProfileItem(64, 0, 4, "n",	false)); // pitch pump
+
+        profileMap.put("GOVERNOR_DIVIDER",	    new ProfileItem(65, 1, 8, "u",	true));
+        profileMap.put("GOVERNOR_RATIO",	    new ProfileItem(66, 20, 254, "t",	true));
+        profileMap.put("GOVERNOR_THR_REVERSE",	new ProfileItem(67, "0", "1", "w",	true));
+        profileMap.put("GOVERNOR_THR_MIN",	    new ProfileItem(68, 50, 150, "k",	true));
+        profileMap.put("GOVERNOR_THR_MAX",	    new ProfileItem(69, 50, 150, "K",	true));
+        profileMap.put("GOVERNOR_RPM_MAX",	    new ProfileItem(70, 0, 250, "W",	true));
+        profileMap.put("GOVERNOR_IGAIN",	    new ProfileItem(71, 1, 6, "y",	false)); // mira drzeni otacek
 
 		this.mProfile = mProfile;
 
@@ -230,7 +243,7 @@ public class DstabiProfile {
 		}
 		return null;
 	}
-	
+
 	public HashMap<String, ProfileItem> getProfileItems()
 	{
 		return profileMap;
@@ -273,6 +286,27 @@ public class DstabiProfile {
 		
        return true;
 	}
+
+    /**
+     *
+     * @return
+     */
+    public String getFormatedVersion()
+    {
+        String buffer = getProfileItemByName("MAJOR").getValueString() + "." + getProfileItemByName("MINOR1").getValueString();
+
+        int minor2Int = getProfileItemByName("MINOR2").getValueInteger();
+
+        if(minor2Int < 128){
+            buffer = buffer + "." + String.valueOf(minor2Int);
+        }else if(minor2Int < 220){
+            buffer = buffer + "-beta" + String.valueOf(minor2Int - 128);
+        }else {
+            buffer = buffer + "-rc" + String.valueOf(minor2Int - 220);
+        }
+
+        return buffer;
+    }
 	
 	/**
 	 * spocita a vrati checksum ze zakladniho profilu, pri chybe vraci -1
@@ -384,7 +418,7 @@ public class DstabiProfile {
 	 */
 	public class ProfileItem{
 		private Integer positionInConfig;
-		private Byte value;
+		private byte[] value = new byte[2];
 		private Integer min;
 		private Integer max;
 		private String sendCode;
@@ -405,8 +439,8 @@ public class DstabiProfile {
 		{
 			this.positionInConfig = positionInConfig;
 			this.sendCode = sendCode;
-			this.min = ByteOperation.byteArrayToInt(min.getBytes());
-			this.max = ByteOperation.byteArrayToInt(max.getBytes());
+			this.min = ByteOperation.byte2ArrayToSigInt(min.getBytes());
+			this.max = ByteOperation.byte2ArrayToSigInt(max.getBytes());
 			this.deactiveInBasicMode = deactiveInBasicMode;
 		}
 		
@@ -453,10 +487,21 @@ public class DstabiProfile {
 		 * 
 		 * @param value
 		 */
-		public void setValue(Byte value)
+		public void setValue(byte value)
 		{
-			this.value = value;
+			this.value = new byte[1];
+			this.value[0] = value;
 		}
+
+        /**
+         * nastavime hodnotu
+         *
+         * @param value
+         */
+        public void setValue(byte[] value)
+        {
+            this.value = value;
+        }
 		
 		/**
 		 * nastavime hodnotu
@@ -465,7 +510,7 @@ public class DstabiProfile {
 		 */
 		public void setValue(Integer value)
 		{
-			this.value = ByteOperation.intToByte(value);
+			this.value = ByteOperation.intToByteArray(value);
 		}
 		
 		
@@ -476,9 +521,9 @@ public class DstabiProfile {
 		 */
 		public void setValueFromSpinner(Integer value)
 		{
-			this.value = ByteOperation.intToByte(value+ this.min);
+			this.value = ByteOperation.intToByteArray(value + this.min);
 		}
-		
+
 		/**
 		 * hodnota pro checkBox, 
 		 * 
@@ -487,19 +532,10 @@ public class DstabiProfile {
 		 */
 		public void setValueFromCheckBox(Boolean checked){
 			if(checked == true){
-				value = ByteOperation.intToByte(this.getMaximum()); // "1"
+				value = ByteOperation.intToByteArray(this.getMaximum()); // "1"
 			}else{
-				value = ByteOperation.intToByte(this.getMaximum()); // "0"
+				value = ByteOperation.intToByteArray(this.getMinimum()); // "0"
 			}
-		}
-		
-		/**
-		 * vratime hodnotu
-		 * 
-		 */
-		public Byte getValueByte()
-		{
-			return this.value;
 		}
 		
 		/**
@@ -532,9 +568,7 @@ public class DstabiProfile {
 		 */
 		public byte[] getValueBytesArray()
 		{
-			byte[] ret = new byte[1];	
-			ret[0] = value;
-			return ret;
+			return value;
 		}
 		
 		/**
@@ -546,7 +580,13 @@ public class DstabiProfile {
 			if(this.value == null){
 				return 0;
 			}
-			return ByteOperation.byteToUnsignedInt(this.value);
+
+            if(min >= 0){
+                return ByteOperation.byteArrayToUnsignedInt(this.value);
+            }else{
+                return ByteOperation.byte2ArrayToSigInt(this.value);
+            }
+
 		}
 		
 		/**
@@ -570,9 +610,10 @@ public class DstabiProfile {
 				if(min >= 0){
 					return (getValueInteger() >= min) && (getValueInteger() <= max); 
 				}else{
-					return (value >= min) && (value <= max);
+					return (ByteOperation.byte2ArrayToSigInt(value) >= min) && (ByteOperation.byte2ArrayToSigInt(value) <= max);
 				}
 			}
+
 			return true;
 		}
 		

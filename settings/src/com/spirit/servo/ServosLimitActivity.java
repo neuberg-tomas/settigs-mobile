@@ -33,6 +33,7 @@ import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.google.analytics.tracking.android.EasyTracker;
 import com.helpers.MenuListAdapter;
 import com.lib.BluetoothCommandService;
 import com.lib.menu.Menu;
@@ -61,7 +62,7 @@ public class ServosLimitActivity extends BaseActivity
 		initSlideMenu(R.layout.servos_limit);
 
 		getWindow().setFeatureInt(Window.FEATURE_CUSTOM_TITLE, R.layout.window_title);
-		((TextView) findViewById(R.id.title)).setText(TextUtils.concat(getTitle(), " \u2192 ", getString(R.string.servos_button_text), " \u2192 ", getString(R.string.limit)));
+		((TextView) findViewById(R.id.title)).setText(TextUtils.concat(getTitle(), " \u2192 ", getString(R.string.limits)));
 
 		//naplnime seznam polozek pro menu
 		menuListIndex = Menu.getInstance().getItemForGroup(Menu.MENU_INDEX_SERVOLIMIT);
@@ -146,4 +147,16 @@ public class ServosLimitActivity extends BaseActivity
 
 		return menuListData;
 	}
+
+    @Override
+    public void onStart() {
+        super.onStart();
+        EasyTracker.getInstance(this).activityStart(this);
+    }
+
+    @Override
+    public void onStop() {
+        super.onStop();
+        EasyTracker.getInstance(this).activityStop(this);
+    }
 }

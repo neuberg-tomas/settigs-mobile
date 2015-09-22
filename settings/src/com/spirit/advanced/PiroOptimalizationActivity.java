@@ -27,6 +27,7 @@ import android.widget.CompoundButton.OnCheckedChangeListener;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.google.analytics.tracking.android.EasyTracker;
 import com.helpers.ByteOperation;
 import com.helpers.DstabiProfile;
 import com.helpers.DstabiProfile.ProfileItem;
@@ -122,6 +123,7 @@ public class PiroOptimalizationActivity extends BaseActivity
 			if (!getAppBasicMode()) {
 				stabiProvider.sendDataNoWaitForResponce("O", ByteOperation.intToByteArray(0x02)); //povoleni nastaveni optimalizace
 			}
+            initDefaultValue();
 		} else {
 			finish();
 		}
@@ -226,4 +228,17 @@ public class PiroOptimalizationActivity extends BaseActivity
 
 		return true;
 	}
+
+    @Override
+    public void onStart() {
+        super.onStart();
+        EasyTracker.getInstance(this).activityStart(this);
+    }
+
+    @Override
+    public void onStop()
+    {
+        super.onStop();
+        EasyTracker.getInstance(this).activityStop(this);
+    }
 }

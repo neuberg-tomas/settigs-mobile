@@ -26,10 +26,12 @@ import android.widget.TextView;
 
 import com.customWidget.picker.ProgresEx;
 import com.customWidget.picker.ProgresEx.OnChangedListener;
+import com.google.analytics.tracking.android.EasyTracker;
 import com.helpers.ByteOperation;
 import com.helpers.DstabiProfile;
 import com.helpers.DstabiProfile.ProfileItem;
 import com.lib.BluetoothCommandService;
+import com.lib.translate.ServoSubtrimProgressExTranslate;
 import com.spirit.BaseActivity;
 import com.spirit.R;
 
@@ -101,6 +103,7 @@ public class ServosSubtrimActivity extends BaseActivity
 			if (!getAppBasicMode()) {
 				stabiProvider.sendDataNoWaitForResponce("O", ByteOperation.intToByteArray(0x00)); //povoleni subtrimu
 			}
+            initDefaultValue();
 		} else {
 			finish();
 		}
@@ -128,17 +131,12 @@ public class ServosSubtrimActivity extends BaseActivity
 		}
 	}
 
-	@Override
-	public void onStop()
-	{
-		super.onStop();
-	}
-
 	private void initGui()
 	{
 		for (int i = 0; i < formItems.length; i++) {
 			ProgresEx tempPicker = (ProgresEx) findViewById(formItems[i]);
-			tempPicker.setRange(0, 255); // tohle rozmezi asi brat ze stabi profilu
+			tempPicker.setRange(0, 254); // tohle rozmezi asi brat ze stabi profilu
+            tempPicker.setTranslate(new ServoSubtrimProgressExTranslate());
 			tempPicker.setTitle(formItemsTitle[i]);
 		}
 	}
@@ -204,8 +202,10 @@ public class ServosSubtrimActivity extends BaseActivity
 				if (parent.getId() == formItems[i]) {
 					showInfoBarWrite();
 					ProfileItem item = profileCreator.getProfileItemByName(protocolCode[i]);
-					item.setValue(newVal);
-					stabiProvider.sendDataNoWaitForResponce(item);
+                    if(item != null) {
+                        item.setValue(newVal);
+                        stabiProvider.sendDataNoWaitForResponce(item);
+                    }
 				}
 			}
             initDefaultValue();
@@ -233,4 +233,18 @@ public class ServosSubtrimActivity extends BaseActivity
 		}
 		return true;
 	}
+
+    @Override
+    public void onStart() {
+        super.onStart();
+        EasyTracker.getInstance(this).activityStart(this);
+    }
+
+    @Override
+    public void onStop()
+    {
+        super.onStop();
+        EasyTracker.getInstance(this).activityStop(this);
+    }
+
 }

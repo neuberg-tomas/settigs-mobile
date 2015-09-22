@@ -20,12 +20,14 @@ package com.spirit.stabi;
 import android.os.Bundle;
 import android.os.Message;
 import android.text.TextUtils;
+import android.view.View;
 import android.view.Window;
 import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.customWidget.picker.ProgresEx;
 import com.customWidget.picker.ProgresEx.OnChangedListener;
+import com.google.analytics.tracking.android.EasyTracker;
 import com.helpers.DstabiProfile;
 import com.helpers.DstabiProfile.ProfileItem;
 import com.lib.BluetoothCommandService;
@@ -95,9 +97,12 @@ public class StabiColActivity extends BaseActivity
 	public void onResume()
 	{
 		super.onResume();
-		if (stabiProvider.getState() == BluetoothCommandService.STATE_CONNECTED)
-			((ImageView) findViewById(R.id.image_title_status)).setImageResource(R.drawable.green);
-		else finish();
+		if (stabiProvider.getState() == BluetoothCommandService.STATE_CONNECTED) {
+            ((ImageView) findViewById(R.id.image_title_status)).setImageResource(R.drawable.green);
+            initDefaultValue();
+        }else{
+            finish();
+        }
 	}
 	
 	/**
@@ -169,12 +174,31 @@ public class StabiColActivity extends BaseActivity
 
 			tempPicker.setCurrentNoNotify(item.getValueInteger());
 
-			if(profileCreator.getProfileItemByName("ALT_FUNCTION").getValueInteger() == 65 || profileCreator.getProfileItemByName("ALT_FUNCTION").getValueInteger() == 68){ // 65 is "A" in profile, 68 is D
+            if(item.getValueInteger() < 127 + 4 && item.getValueInteger() > 127 - 4){
+                showWarning(View.VISIBLE);
+            }else{
+                showWarning(View.INVISIBLE);
+            }
+
+			if(profileCreator.getProfileItemByName("ALT_FUNCTION").getValueInteger() == 65
+                    || profileCreator.getProfileItemByName("ALT_FUNCTION").getValueInteger() == 68
+                    || profileCreator.getProfileItemByName("ALT_FUNCTION").getValueInteger() == 69
+            ){ // 65 is "A" in profile, 68 is D,  69 is E
 				tempPicker.setEnabled(false);
 			}
 		}
 
 	}
+
+    /**
+     *
+     * @param show
+     */
+    private void showWarning(int show)
+    {
+        findViewById(R.id.warning_header).setVisibility(show);
+        findViewById(R.id.warning).setVisibility(show);
+    }
 
 	protected OnChangedListener numberPicekrListener = new OnChangedListener()
 	{
@@ -188,15 +212,17 @@ public class StabiColActivity extends BaseActivity
 				if (parent.getId() == formItems[i]) {
 					showInfoBarWrite();
 					ProfileItem item = profileCreator.getProfileItemByName(protocolCode[i]);
+                    if(item != null) {
+                        item.setValue(newVal);
+                        if(newVal < 127 + 4 && newVal > 127 - 4){
+                            showWarning(View.VISIBLE);
+                        }else{
+                            showWarning(View.INVISIBLE);
+                        }
 
-					if (newVal > 127 && newVal < 127 + 4) newVal = 127 - 4;
-					if (newVal < 127 && newVal > 127 - 4) newVal = 127 + 4;
+                        stabiProvider.sendDataNoWaitForResponce(item);
+                    }
 
-					parent.setCurrentNoNotify(newVal);
-
-					item.setValue(newVal);
-
-					stabiProvider.sendDataNoWaitForResponce(item);
 				}
 			}
             initDefaultValue();
@@ -224,6 +250,18 @@ public class StabiColActivity extends BaseActivity
 		}
 		return true;
 	}
+
+    @Override
+    public void onStart() {
+        super.onStart();
+        EasyTracker.getInstance(this).activityStart(this);
+    }
+
+    @Override
+    public void onStop() {
+        super.onStop();
+        EasyTracker.getInstance(this).activityStop(this);
+    }
 }
 
 

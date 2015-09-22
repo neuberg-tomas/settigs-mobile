@@ -3,6 +3,8 @@ package com.spirit.general;
 import android.os.Bundle;
 import android.os.Message;
 import android.text.TextUtils;
+import android.view.KeyEvent;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.Window;
 import android.widget.AdapterView;
@@ -12,11 +14,14 @@ import android.widget.Spinner;
 import android.widget.TextView;
 
 import com.exception.IndexOutOfException;
+import com.google.analytics.tracking.android.EasyTracker;
 import com.helpers.DstabiProfile;
 import com.helpers.DstabiProfile.ProfileItem;
 import com.lib.BluetoothCommandService;
 import com.spirit.BaseActivity;
 import com.spirit.R;
+
+import java.util.ArrayList;
 
 public class ChannelsActivity extends BaseActivity{
 	
@@ -39,7 +44,7 @@ public class ChannelsActivity extends BaseActivity{
 	{
 		super.onCreate(savedInstanceState);
 		requestWindowFeature(Window.FEATURE_CUSTOM_TITLE);
-		initSlideMenu(R.layout.channels);
+        setContentView(R.layout.channels);
 		getWindow().setFeatureInt(Window.FEATURE_CUSTOM_TITLE, R.layout.window_title);
 		((TextView) findViewById(R.id.title)).setText(TextUtils.concat(getTitle(), " \u2192 ", getString(R.string.general_button_text), " \u2192 ", getString(R.string.channels)));
 
@@ -79,11 +84,47 @@ public class ChannelsActivity extends BaseActivity{
 		super.onResume();
 		if (stabiProvider.getState() == BluetoothCommandService.STATE_CONNECTED) {
 			((ImageView) findViewById(R.id.image_title_status)).setImageResource(R.drawable.green);
+            initDefaultValue();
 		} else {
 			finish();
 		}
 	}
-	
+
+    @Override
+    public boolean onKeyDown(int keyCode, KeyEvent event) {
+        if ((keyCode == KeyEvent.KEYCODE_BACK)) {
+           if(!checkColision()){
+               return false;
+           }
+        }
+        return super.onKeyDown(keyCode, event);
+    }
+
+    /**
+     * kontrola kolizi v kanalech
+     *
+     * @return
+     */
+    public boolean checkColision(){
+        //zkontrolujme konzistenci kanalu
+        ArrayList<Integer> positions = new ArrayList<Integer>();
+        for(int a = 0; a < formItems.length; a++){
+            Spinner sp =  (Spinner) findViewById(formItems[a]);
+            positions.add(sp.getSelectedItemPosition());
+        }
+
+
+        for(int a = 0; a < positions.size(); a++){
+            for(int sub_a = 0; sub_a < positions.size(); sub_a++) {
+                if (positions.get(a) == positions.get(sub_a) && a != sub_a && positions.get(sub_a) != 7) {
+                    showConfirmDialog(String.format(getResources().getString(R.string.channelColision), positions.get(sub_a) + 1 ));
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
+
 	/**
 	 * disablovani prvku v bezpecnem rezimu
 	 */
@@ -161,15 +202,13 @@ public class ChannelsActivity extends BaseActivity{
 				tempSpinner.setSelection(pos);
 
                 if(profileCreator.getProfileItemByName("RECEIVER").getValueInteger() == 65){// 65 je A coz je PWM prijmac,
-                    switch (pos){
+                    switch (i){
                         case 0:
                         case 1:
                         case 2:
                         case 3:
                         case 5: ((Spinner) findViewById(formItems[i])).setEnabled(false); break;
                     }
-                }else{
-                    ((Spinner) findViewById(formItems[i])).setEnabled(true);
                 }
 
 			}
@@ -201,15 +240,13 @@ public class ChannelsActivity extends BaseActivity{
 						sp.setSelection(7); // neprirazeno
 						return;
 					}
-					
-					//nejprve zkontrolujeme jestli uz nekde hodnota neni pouzita
-					for(int a = 0; a < formItems.length; a++){
-						Spinner sp =  (Spinner) findViewById(formItems[a]);
-						if(sp.getSelectedItemPosition() == pos && i != a && pos != 7){ // neprirazeno muze mit kolizi, 7 = neprirazeno
-							showConfirmDialog(String.format(getResources().getString(R.string.channelColision), i));
-							return;
-						}
-					}
+
+                    //pro DSM musi byt prirazen kanal
+                    if(profileCreator.getProfileItemByName("RECEIVER").getValueInteger() == 67 && pos == 7 && i == 0){ // 67 je A coz je DXM prijmac,  7 = neprirazeno
+                        Spinner sp =  (Spinner) findViewById(formItems[i]);
+                        sp.setSelection(0); // kanal 1.
+                        return;
+                    }
 					
 					ProfileItem item = profileCreator.getProfileItemByName(protocolCode[i]);
 					item.setValueFromSpinner(pos);
@@ -233,6 +270,31 @@ public class ChannelsActivity extends BaseActivity{
 
 		}
 	};
+
+    /**
+     * reakce na kliknuti polozky v kontextovem menu
+     */
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item)
+    {
+
+        //otevreni informace o autorovi
+        if (item.getGroupId() == GROUP_GENERAL && item.getItemId() == OPEN_AUTHOR) {
+            if(!checkColision()){
+                return false;
+            }
+        }
+
+        //ulozit do jednotky
+        if (item.getGroupId() == GROUP_SAVE && item.getItemId() == SAVE_PROFILE_MENU) {
+            if(!checkColision()){
+                return false;
+            }
+        }
+
+
+        return super.onOptionsItemSelected(item);
+    }
 	
 	/**
 	 * obsluha callbacku
@@ -259,5 +321,18 @@ public class ChannelsActivity extends BaseActivity{
 		}
 		return true;
 	}
+
+    @Override
+    public void onStart() {
+        super.onStart();
+        EasyTracker.getInstance(this).activityStart(this);
+    }
+
+    @Override
+    public void onStop()
+    {
+        super.onStop();
+        EasyTracker.getInstance(this).activityStop(this);
+    }
 	
 }

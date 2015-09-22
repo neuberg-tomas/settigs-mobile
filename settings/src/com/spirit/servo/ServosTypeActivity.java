@@ -20,6 +20,7 @@ package com.spirit.servo;
 import android.os.Bundle;
 import android.os.Message;
 import android.text.TextUtils;
+import android.util.Log;
 import android.view.View;
 import android.view.Window;
 import android.widget.AdapterView;
@@ -30,6 +31,7 @@ import android.widget.Spinner;
 import android.widget.TextView;
 
 import com.exception.IndexOutOfException;
+import com.google.analytics.tracking.android.EasyTracker;
 import com.helpers.DstabiProfile;
 import com.helpers.DstabiProfile.ProfileItem;
 import com.lib.BluetoothCommandService;
@@ -99,6 +101,7 @@ public class ServosTypeActivity extends BaseActivity
 		super.onResume();
 		if (stabiProvider.getState() == BluetoothCommandService.STATE_CONNECTED) {
 			((ImageView) findViewById(R.id.image_title_status)).setImageResource(R.drawable.green);
+            initDefaultValue();
 		} else {
 			finish();
 		}
@@ -155,8 +158,13 @@ public class ServosTypeActivity extends BaseActivity
 			adapter = ArrayAdapter.createFromResource(this, R.array.rudder_frequency_value, android.R.layout.simple_spinner_item);
 		}
 
+		lock = lock + 1;
 		adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
 		rudderFrequency.setAdapter(adapter);
+
+		if (Math.min(freqPos, adapter.getCount() - 1) != rudderFrequency.getSelectedItemPosition()) {
+			lock = lock + 1;
+		}
 		rudderFrequency.setSelection(Math.min(freqPos, adapter.getCount() - 1));
 	}
 
@@ -173,7 +181,7 @@ public class ServosTypeActivity extends BaseActivity
 			errorInActivity(R.string.damage_profile);
 			return;
 		}
-		
+
 		checkBankNumber(profileCreator);
 		initBasicMode();
 
@@ -188,7 +196,9 @@ public class ServosTypeActivity extends BaseActivity
 
 				int pos = profileCreator.getProfileItemByName(protocolCode[i]).getValueForSpinner(tempSpinner.getCount());
 
-				if (pos != tempSpinner.getSelectedItemPosition()) lock = lock + 1;
+				if (pos != tempSpinner.getSelectedItemPosition()) {
+					lock = lock + 1;
+				}
 				tempSpinner.setSelection(pos);
 			}
 		} catch (IndexOutOfException e) {
@@ -216,6 +226,8 @@ public class ServosTypeActivity extends BaseActivity
 				if (parent.getId() == formItems[i]) {
 					ProfileItem item = profileCreator.getProfileItemByName(protocolCode[i]);
 					item.setValueFromSpinner(pos);
+
+					Log.d(TAG, "odesilam spinner");
 					stabiProvider.sendDataNoWaitForResponce(item);
 
 					showInfoBarWrite();
@@ -257,4 +269,16 @@ public class ServosTypeActivity extends BaseActivity
 		}
 		return true;
 	}
+
+    @Override
+    public void onStart() {
+        super.onStart();
+        EasyTracker.getInstance(this).activityStart(this);
+    }
+
+    @Override
+    public void onStop() {
+        super.onStop();
+        EasyTracker.getInstance(this).activityStop(this);
+    }
 }

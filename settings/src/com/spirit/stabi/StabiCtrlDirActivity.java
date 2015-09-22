@@ -27,6 +27,7 @@ import android.widget.TextView;
 
 import com.customWidget.picker.ProgresEx;
 import com.customWidget.picker.ProgresEx.OnChangedListener;
+import com.google.analytics.tracking.android.EasyTracker;
 import com.helpers.DstabiProfile;
 import com.helpers.DstabiProfile.ProfileItem;
 import com.lib.BluetoothCommandService;
@@ -95,9 +96,12 @@ public class StabiCtrlDirActivity extends BaseActivity
 	public void onResume()
 	{
 		super.onResume();
-		if (stabiProvider.getState() == BluetoothCommandService.STATE_CONNECTED)
-			((ImageView) findViewById(R.id.image_title_status)).setImageResource(R.drawable.green);
-		else finish();
+		if (stabiProvider.getState() == BluetoothCommandService.STATE_CONNECTED) {
+            ((ImageView) findViewById(R.id.image_title_status)).setImageResource(R.drawable.green);
+            initDefaultValue();
+        }else{
+            finish();
+        }
 	}
 	
 	/**
@@ -166,7 +170,7 @@ public class StabiCtrlDirActivity extends BaseActivity
 			ProfileItem item = profileCreator.getProfileItemByName(protocolCode[i]);
 
 			tempPicker.setCurrentNoNotify(item.getValueInteger());
-			if(profileCreator.getProfileItemByName("ALT_FUNCTION").getValueInteger() != 68){
+			if(profileCreator.getProfileItemByName("ALT_FUNCTION").getValueInteger() < 68){
 				tempPicker.setEnabled(false);
 			}
 		}
@@ -185,9 +189,10 @@ public class StabiCtrlDirActivity extends BaseActivity
 					showInfoBarWrite();
 					ProfileItem item = profileCreator.getProfileItemByName(protocolCode[i]);
 
-					item.setValue(newVal);
-
-					stabiProvider.sendDataNoWaitForResponce(item);
+                    if(item != null) {
+                        item.setValue(newVal);
+                        stabiProvider.sendDataNoWaitForResponce(item);
+                    }
 				}
 			}
             initDefaultValue();
@@ -215,6 +220,18 @@ public class StabiCtrlDirActivity extends BaseActivity
 		}
 		return true;
 	}
+
+    @Override
+    public void onStart() {
+        super.onStart();
+        EasyTracker.getInstance(this).activityStart(this);
+    }
+
+    @Override
+    public void onStop() {
+        super.onStop();
+        EasyTracker.getInstance(this).activityStop(this);
+    }
 }
 
 
